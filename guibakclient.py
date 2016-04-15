@@ -91,33 +91,43 @@ class MyFrame(Frame):
 		Frame.__init__(self,root)
 		self.root = root
 		self.grid()
-		self.local_ip = '127.0.0.1'
-		self.serv_ports = [10888,20888,30888]
+		self.remote_ip = '127.0.0.1'
+		self.remote_ports = 10888
+		self.remote_ip_var = StringVar()
+		self.remote_ports_var = IntVar()
+		self.bak_src_var = StringVar()
 		self.init_components()
 
 	def init_components(self):
-		proj_name = Label(self,text = 'Remote Server')
+		proj_name = Label(self,text = 'Remote Client')
 		proj_name.grid(columnspan = 2)
 		
-		serv_ip_label = Label(self,text = 'Server Address')
+		serv_ip_label = Label(self,text = 'Server Address:')
 		serv_ip_label.grid(row = 1)
 
-		self.serv_ip = Combobox(self,values = self.get_ipaddr())
-		self.serv_ip.set(self.local_ip)
-		self.serv_ip.grid(row = 1,column = 1)
+		self.serve_ip = Entry(self,textvariable = self.remote_ip_var)
+		self.remote_ip_var.set(self.remote_ip)
+		self.serve_ip.grid(row = 1,column = 1)
+		print self.remote_ip_var,self.remote_ip_var.get()
 
 		serv_port_label = Label(self,text = 'SERVER PORT')
 		serv_port_label.grid(row=2)
 
-		self.serv_port = Combobox(self,values=self.serv_ports)
-		self.serv_port.set(self.serv_ports[0])
+		self.serv_port = Entry(self,textvariable = self.remote_ports_var)
+		self.remote_ports_var.set(self.remote_ports)
 		self.serv_port.grid(row=2,column=1)
 
-		self.start_btn = Button(self,text = 'Start Server',command=self.start_serv)
-		self.start_btn.grid(row=3)
+		src_label = Label(self,text = 'Target File Path')
+		src_label.grid(row=3)
+
+		self.bak_src = Entry(self,textvariable = self.bak_src_var)
+		self.bak_src.grid(row=3,column=1)
+
+		self.start_btn = Button(self,text = 'Start BackUP',command=self.start_send)
+		self.start_btn.grid(row=4)
 
 		self.start_exit_bnt = Button(self,text = 'Exit Server',command=self.root.destroy)
-		self.start_exit_bnt.grid(row=3,column=1)
+		self.start_exit_bnt.grid(row=4,column=1)
 
 	def get_ipaddr(self):
 		host_name = socket.gethostname()
@@ -127,17 +137,16 @@ class MyFrame(Frame):
 		print info
 		return info
 	
-	def start_serv(self):
-		print self.serv_ip.get(),self.serv_port.get()
-		start(self.serv_ip.get(),int(self.serv_port.get()))
+	def start_send(self):
+		print self.remote_ip_var.get(),self.remote_ports_var.get()
+		#start(self.serv_ip.get(),int(self.serv_port.get()))
 
 if __name__ == '__main__':
 	root = Tk()
-	root.title('BeiFen server')
+	root.title('BeiFen Client')
 	#root.resizeable(False,False)
 	app = MyFrame(root)
 	app.mainloop()
-
 
 
 
