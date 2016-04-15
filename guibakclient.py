@@ -6,84 +6,62 @@ import os,pickle
 
 BK_PATH = 'back'
 
-def recv_unit_data(clnt,infos_len):
-	data = b''
-	while True:
-		if infos_len>1024:
-			data += clnt.recv(1024)
-			infos_len -= 1024
-		else:
-			data += clnt.recv(infos_len)
-			break
+def get_files_info(path):
+	if not path or not os.path.exists(path):
+		return None
+	files = os.walk(path)
+	infos = []
+	file_paths = []
 
-	return data
+	for p,ds,fs in files:
+		for f in fs:
+			file_name = os.path.join(p,f)
+			file_size = os.stat(file_name).st_size
+			file_paths.append(file_name)
+			file_name = file_name[len(path)+1:]
+			infos.append((file_size,file_name))
+	return infos,file_paths
 
-def get_files_info(clnt):
+def send_files_infos(my_sock,file_infos):
 	fmt_str = 'Q'
-	headsize = struct.calcsize(fmt_str)
-	data = clnt.recv(headsize)
+	infos_bytes = pickle.dumps(file_infos)
+	infos_bytes_len = len(infos_bytes)
+	infos_len_pack = struct.pack(fmt_str,infos_bytes_len)
+	my_sock.sendall(infos_len_pack)
+	my_sock.sendall(infos_bytes)
 
-	infos_len = struct.unpack(fmt_str,data)[0]
-	data = recv_unit_data(clnt,infos_len)
-
-	return pickle.loads(data)
-
-def mk_path(filepath):
-	paths = filepath.split(os.path.sep)[:-1]
-	p = BK_PATH
-	for path in paths:
-		p = os.path.join(p,path)
-		if not os.path.exists(p):
-			os.mkdir(p)
-
-def recv_file(clnt,infos_len,filepath):
-	mk_path(filepath)
-	filepath = os.path.join(BK_PATH,filepath)
-	f = open(filepath,'wb+')
-
+def send_files(my_sock,file_path):
+	f = open(file_path,'rb')
 	try:
-		if 0<infos_len<=1024:
-			data = clnt.recv(infos_len)
-			f.write(data)
-		else:
-			while True:
-				if infos_len >1024:
-					data = clnt.recv(1024)
-					f.write(data)
-					infos_len -= 1024
-				else:
-					data = clnt.recv(infos_len)
-					f.write(data)
-					break
-	except Exception,e:
-		print e
-	else:
-		return True
+		while True:
+			data = f.read(1024)
+			if data:
+				my_sock.sendall(data)
+			else:
+				break
 	finally:
 		f.close()
 
-def send_echo(clint,res):
-	if res:
-		clnt.sendall(b'success')
-	else:
-		clnt.sendall(b'')
+def get_bak_info(my_sock,size=7):
+	info = my_sock.recv(size)
+	print info.decode('utf-8')
 
+def start(host,port,src):
+	if not os.path.exists(src):
+		print 'backup file not exists'
+		return 
+	s = socket.socket()
+	s.connect((host,port))
+	path = src
+	file_infos,file_paths = get_files_info(path)
+	print 'file_infos,file_paths',file_infos,file_paths
+	send_files_infos(s,file_infos)
 
-def start(host,port):
-	if not os.path.exists(BK_PATH):
-		os.mkdir(BK_PATH)
-		st = socket.socket()
-		st.bind((host,port))
-		st.listen(1)
-		client,addr = st.accept()
-		files_lst = get_files_info(client)
-
-		for size,filepath in files_lst:
-			res = recv_file(client,size,filepath)
-			send_echo(client,res)
-
-		client.close()
-		st.close()
+	for fp in file_paths:
+		send_files(s,fp)
+		print fp
+		get_bak_info(s)
+	s.close()
 
 class MyFrame(Frame):
 
@@ -92,7 +70,7 @@ class MyFrame(Frame):
 		self.root = root
 		self.grid()
 		self.remote_ip = '127.0.0.1'
-		self.remote_ports = 10888
+		self.remote_ports = 10887
 		self.remote_ip_var = StringVar()
 		self.remote_ports_var = IntVar()
 		self.bak_src_var = StringVar()
@@ -139,7 +117,7 @@ class MyFrame(Frame):
 	
 	def start_send(self):
 		print self.remote_ip_var.get(),self.remote_ports_var.get()
-		#start(self.serv_ip.get(),int(self.serv_port.get()))
+		start(self.remote_ip_var.get(),int(self.remote_ports_var.get()),self.bak_src_var.get())
 
 if __name__ == '__main__':
 	root = Tk()
@@ -150,7 +128,7 @@ if __name__ == '__main__':
 
 
 
-
+#/Users/xx12b/Project/chatRoom/sample
 
 
 

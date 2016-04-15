@@ -22,7 +22,7 @@ def get_files_info(clnt):
 	fmt_str = 'Q'
 	headsize = struct.calcsize(fmt_str)
 	data = clnt.recv(headsize)
-
+	print 'data',data
 	infos_len = struct.unpack(fmt_str,data)[0]
 	data = recv_unit_data(clnt,infos_len)
 
@@ -62,7 +62,7 @@ def recv_file(clnt,infos_len,filepath):
 	finally:
 		f.close()
 
-def send_echo(clint,res):
+def send_echo(clnt,res):
 	if res:
 		clnt.sendall(b'success')
 	else:
@@ -72,18 +72,19 @@ def send_echo(clint,res):
 def start(host,port):
 	if not os.path.exists(BK_PATH):
 		os.mkdir(BK_PATH)
-		st = socket.socket()
-		st.bind((host,port))
-		st.listen(1)
-		client,addr = st.accept()
-		files_lst = get_files_info(client)
+	st = socket.socket()
+	st.bind((host,port))
+	print 'my host and port is ',host,port
+	st.listen(1)
+	client,addr = st.accept()
+	files_lst = get_files_info(client)
 
-		for size,filepath in files_lst:
-			res = recv_file(client,size,filepath)
-			send_echo(client,res)
+	for size,filepath in files_lst:
+		res = recv_file(client,size,filepath)
+		send_echo(client,res)
 
-		client.close()
-		st.close()
+	client.close()
+	st.close()
 
 class MyFrame(Frame):
 
@@ -92,7 +93,7 @@ class MyFrame(Frame):
 		self.root = root
 		self.grid()
 		self.local_ip = '127.0.0.1'
-		self.serv_ports = [10888,20888,30888]
+		self.serv_ports = [10887,20888,30888]
 		self.init_components()
 
 	def init_components(self):
@@ -124,7 +125,7 @@ class MyFrame(Frame):
 		info = socket.gethostbyname_ex(host_name)
 		info = info[2]
 		info.append(self.local_ip)
-		print info
+		#print info
 		return info
 	
 	def start_serv(self):
