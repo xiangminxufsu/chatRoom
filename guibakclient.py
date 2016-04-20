@@ -20,6 +20,7 @@ def get_files_info(path):
 			file_paths.append(file_name)
 			file_name = file_name[len(path)+1:]
 			infos.append((file_size,file_name))
+	print infos,file_paths
 	return infos,file_paths
 
 def send_files_infos(my_sock,file_infos):

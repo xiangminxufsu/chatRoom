@@ -88,12 +88,13 @@ def start(host,port):
 
 class MyFrame(Frame):
 
-	def __init__(self,root):
+	def __init__(self,root,local_ip,serv_ports):
 		Frame.__init__(self,root)
 		self.root = root
 		self.grid()
-		self.local_ip = '127.0.0.1'
-		self.serv_ports = [10887,20888,30888]
+
+		self.local_ip = local_ip
+		self.serv_ports = serv_ports
 		self.init_components()
 
 	def init_components(self):
@@ -123,9 +124,10 @@ class MyFrame(Frame):
 	def get_ipaddr(self):
 		host_name = socket.gethostname()
 		info = socket.gethostbyname_ex(host_name)
+		print host_name,info
 		info = info[2]
 		info.append(self.local_ip)
-		#print info
+		print info
 		return info
 	
 	def start_serv(self):
@@ -135,8 +137,9 @@ class MyFrame(Frame):
 if __name__ == '__main__':
 	root = Tk()
 	root.title('BeiFen server')
-	#root.resizeable(False,False)
-	app = MyFrame(root)
+	local_ip = '127.0.0.1'
+	serv_ports = [10887,20888,30888]
+	app = MyFrame(root,local_ip,serv_ports)
 	app.mainloop()
 
 
