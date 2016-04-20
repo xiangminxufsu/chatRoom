@@ -5,7 +5,7 @@ host = ''
 port = 5000
 
 clients = []
-
+#this is new line
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind((host,port))
 s.setblocking(0)
