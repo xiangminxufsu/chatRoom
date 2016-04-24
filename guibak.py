@@ -22,10 +22,12 @@ def get_files_info(clnt):
 	fmt_str = 'Q'
 	headsize = struct.calcsize(fmt_str)
 	data = clnt.recv(headsize)
-	print 'data',data
+	#print 'data',repr(data)
 	infos_len = struct.unpack(fmt_str,data)[0]
+	#print 'infos_len',infos_len
 	data = recv_unit_data(clnt,infos_len)
-
+	#print 'recv_unit_data',data
+	#print pickle.loads(data)
 	return pickle.loads(data)
 
 def mk_path(filepath):
@@ -57,8 +59,6 @@ def recv_file(clnt,infos_len,filepath):
 					break
 	except Exception,e:
 		print e
-	else:
-		return True
 	finally:
 		f.close()
 

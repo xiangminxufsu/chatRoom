@@ -4,8 +4,8 @@ import socket
 import struct
 import os,pickle
 
-BK_PATH = 'back'
-
+#BK_PATH = 'back'
+#added a new line too!
 def get_files_info(path):
 	if not path or not os.path.exists(path):
 		return None
@@ -14,20 +14,24 @@ def get_files_info(path):
 	file_paths = []
 
 	for p,ds,fs in files:
+		#print p,ds,fs
 		for f in fs:
 			file_name = os.path.join(p,f)
 			file_size = os.stat(file_name).st_size
 			file_paths.append(file_name)
 			file_name = file_name[len(path)+1:]
 			infos.append((file_size,file_name))
-	print infos,file_paths
+	#print infos,file_paths
 	return infos,file_paths
 
 def send_files_infos(my_sock,file_infos):
 	fmt_str = 'Q'
 	infos_bytes = pickle.dumps(file_infos)
+	#print 'infos_bytes',infos_bytes
 	infos_bytes_len = len(infos_bytes)
+	#print 'infos_bytes_len',infos_bytes_len
 	infos_len_pack = struct.pack(fmt_str,infos_bytes_len)
+	print 'infos_len_pack',repr(infos_len_pack),(infos_len_pack)
 	my_sock.sendall(infos_len_pack)
 	my_sock.sendall(infos_bytes)
 
@@ -51,13 +55,16 @@ def start(host,port,src):
 	if not os.path.exists(src):
 		print 'backup file not exists'
 		return 
-	s = socket.socket()
-	s.connect((host,port))
 	path = src
 	file_infos,file_paths = get_files_info(path)
-	print 'file_infos,file_paths',file_infos,file_paths
+	s = socket.socket()
+	s.connect((host,port))
+	#file_infos,file_paths = get_files_info(path)
+	#print 'file_infos,file_paths',file_infos,file_paths
 	send_files_infos(s,file_infos)
-
+	#print file_paths
+	#file_paths.sort()
+	#print 'after',file_paths
 	for fp in file_paths:
 		send_files(s,fp)
 		print fp
